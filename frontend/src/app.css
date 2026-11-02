@@ -1,0 +1,41 @@
+/* Only what the component library cannot express as props. */
+
+.alarm {
+  border-color: var(--mantine-color-red-6);
+  box-shadow: inset 4px 0 0 var(--mantine-color-red-6);
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.diff {
+  margin: 0;
+  padding: 6px 8px;
+  overflow-x: auto;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 12.5px;
+  background: var(--mantine-color-default-hover);
+  border-radius: var(--mantine-radius-sm);
+}
+
+.diff .add {
+  color: var(--mantine-color-teal-4);
+  background: color-mix(in srgb, var(--mantine-color-teal-6) 16%, transparent);
+}
+
+.diff .del {
+  color: var(--mantine-color-red-4);
+  background: color-mix(in srgb, var(--mantine-color-red-6) 16%, transparent);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.nowrap {
+  white-space: nowrap;
+}

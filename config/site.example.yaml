@@ -1,0 +1,130 @@
+# reef-console's site file: the aquarium as the console knows it. Copy it to config/site.yaml and make it yours.
+# Not secret (names, units and limits); the Apex's password never goes here. The worker and the web app read it at
+# start: restart both after an edit (docker compose restart).
+#
+# This is a complete, working example: a real tank's file with its address removed. The names (Tmp, pHx5, Amp_3,
+# mainpump_9_8, ...) are the Apex's own names for its inputs and outputs: replace them with yours. Your Apex's
+# status page (http://<apex>/cgi-bin/status.json) lists them; docs/configuration.md explains every key.
+
+timezone: America/New_York # the house's civil time: days, the weekly report and the times the MCP tools show
+
+apex:
+  address: 192.168.1.50 # the Apex Classic's address on your network (give it a DHCP reservation)
+  poll_seconds: 60 # status.json once a minute; the unit is small, do not go much faster
+
+# Filling the history from the unit's own 10-minute log (datalog.json): one day per request, in these local hours,
+# minutes apart, only while the unit answers fast, stopping for the night at the first error. Gaps after the console
+# started polling are always filled; backfill: true also fetches the days before it started (the Classic keeps about
+# a month), once.
+datalog:
+  backfill: false
+  hours: [22, 6] # from, to (local hours; may wrap midnight)
+  spacing_seconds: 300
+  days_back: 40
+
+# The energy each EnergyBar uses (its amps x volts; the power factor taken as 1), and what it costs once the tariff is
+# set (all-in, per kWh).
+energy:
+  volts: 120
+  price_per_kwh: null # e.g. 0.18
+
+# The weekly report (on the Reports page, over MCP, and its headline mailed once by Alertmanager): its day and local
+# hour, and how many days between tests before one shows as "due".
+report:
+  weekday: sunday
+  hour: 9
+  tests_due: { alkalinity: 7, calcium: 14, magnesium: 30, phosphate: 14, nitrate: 14 }
+
+# The outdoor temperature beside the tank's, from Open-Meteo (free, no key; the location goes with each hourly
+# request). Off until a latitude and longitude are set; two decimals (about a kilometre) is plenty.
+weather:
+  latitude: null
+  longitude: null
+
+# Modules the console expects on the AquaBus, by address. One that stops reporting raises "<id> is not reporting"; one
+# that shows up and is not listed is logged as new and left alone.
+# current: the EnergyBar's current input. draws_when_on: outlets that always draw current when energized; the bar
+# showing 0.0 A while one of them is on means the bar lost power or the device stopped.
+modules:
+  - { id: EB8_3, kind: EB8, address: "3", current: Amp_3, draws_when_on: [calcpump_3_8], severity: critical }
+  - { id: EB8_4, kind: EB8, address: "4", current: Amp_4, draws_when_on: [], severity: critical }
+  - { id: EB8_9, kind: EB8, address: "9", current: Amp_9, draws_when_on: [mainpump_9_8], severity: critical }
+  - { id: PM1_5, kind: PM1, address: "5", severity: warning }
+  - { id: PM2_6, kind: PM2, address: "6", severity: critical } # salinity and a second temperature
+  - { id: MOD_7, kind: inputs, address: "7", severity: critical } # a module that carries the leak sensor
+
+# Probe and switch inputs, by the Apex's name. label: what the pages call it. active: false = not in use (no history,
+# no alerts). test: the manual water test that measures the same thing, shown beside the probe. Switches report 0 when
+# OPEN and 60 when CLOSED.
+sensors:
+  Tmp: { label: Temperature, unit: "°F" }
+  pH: { label: pH, unit: pH, test: ph }
+  ORP: { label: ORP, unit: mV }
+  Amp_3: { label: EnergyBar 3 current, unit: A }
+  Amp_4: { label: EnergyBar 4 current, unit: A }
+  Amp_9: { label: EnergyBar 9 current, unit: A }
+  Tmpx5: { label: PM1 temperature, unit: "°F", active: false } # a probe port with nothing in it
+  pHx5: { label: Calcium reactor effluent pH, unit: pH }
+  Tmpx6: { label: PM2 temperature, unit: "°F" }
+  Condx6: { label: Salinity, unit: ppt, test: salinity }
+  sumpLo: { label: Float sumpLo, unit: switch }
+  SumpHi: { label: Float SumpHi, unit: switch }
+  freshL: { label: Float freshL, unit: switch }
+  FreshH: { label: Float FreshH, unit: switch }
+  Leak1B: { label: Leak sensor Leak1B, unit: switch }
+  Outdoor: { label: Outdoor temperature, unit: "°F", external: true } # not an Apex input: from Open-Meteo (weather)
+
+# The alert conditions. Each one that is true is its own alert, and one message per alarm group lists every condition
+# that is true (the Apex's own e-mail names only the first). A critical condition hides the warning on the same sensor.
+# These were imported from the Apex's alarm programs (EmailAlm, SndWrn, SndAlm): one condition per line, with the
+# programs' overlaps merged. Kinds: above/below (a limit), when: closed/open (a switch, optionally only while an
+# output is energized), rise/fall (a change within some minutes).
+# pending: seconds a condition must hold before it alerts. clear: how far back inside the limit a value must come
+# before the alert ends (switches end after the pending time the other way).
+defaults:
+  probe_pending: 180
+  switch_pending: 30
+  module_pending: 60
+  current_pending: 180
+
+conditions:
+  - { id: leak, alarm: tank, sensor: Leak1B, when: closed, severity: critical }
+  - { id: temperature-high, alarm: tank, sensor: Tmp, above: 82.5, clear: 0.3, severity: critical }
+  - { id: temperature-low, alarm: tank, sensor: Tmp, below: 76.0, clear: 0.3, severity: critical }
+  - { id: ph-high, alarm: tank, sensor: pH, above: 8.50, clear: 0.05, severity: warning }
+  - { id: ph-low, alarm: tank, sensor: pH, below: 7.90, clear: 0.05, severity: warning }
+  - { id: orp-high, alarm: tank, sensor: ORP, above: 480, clear: 10, severity: warning }
+  - { id: orp-low, alarm: tank, sensor: ORP, below: 300, clear: 10, severity: warning }
+  - { id: orp-very-low, alarm: tank, sensor: ORP, below: 200, clear: 10, severity: critical }
+  - { id: salinity-low, alarm: tank, sensor: Condx6, below: 34.0, clear: 0.2, severity: warning }
+  - { id: salinity-very-low, alarm: tank, sensor: Condx6, below: 32.5, clear: 0.2, severity: critical }
+  - { id: sump-low-float, alarm: tank, sensor: sumpLo, when: closed, severity: critical }
+  - { id: sump-high-float, alarm: tank, sensor: SumpHi, when: open, severity: critical }
+  - { id: fresh-low-float, alarm: tank, sensor: freshL, when: open, severity: warning }
+  # A fresh-water container filled from an RO/DI unit through a solenoid (Topoff_9_2): full is normal, so FreshH
+  # CLOSED is a one-time notice (below), but the valve still on two minutes after the container is full is critical.
+  # It sees what the Apex switches, not the water: a valve stuck open mechanically needs a third float.
+  - { id: fill-valve-open-when-full, alarm: tank, sensor: FreshH, when: closed, output: Topoff_9_2, pending: 120,
+      severity: critical, text: "The fresh-water container is full (FreshH CLOSED) and the fill valve Topoff_9_2 is still on" }
+  # How fast, not how far. Each limit sits above anything 40 days of this tank's history showed: look at your own
+  # history (the Charts page) before you copy them.
+  - { id: temperature-rising-fast, alarm: tank, sensor: Tmp, rise: 1.0, minutes: 30, severity: critical } # heater stuck on
+  - { id: temperature-falling-fast, alarm: tank, sensor: Tmp, fall: 1.0, minutes: 60, severity: warning }
+  - { id: ph-falling-fast, alarm: tank, sensor: pH, fall: 0.25, minutes: 60, severity: warning }
+  - { id: ph-rising-fast, alarm: tank, sensor: pH, rise: 0.25, minutes: 60, severity: warning }
+  - { id: orp-rising-fast, alarm: tank, sensor: ORP, rise: 60, minutes: 30, severity: warning } # ozone running away
+  - { id: salinity-falling-fast, alarm: tank, sensor: Condx6, fall: 1.5, minutes: 30, severity: warning }
+
+# One-time notices: a message once when a switch comes into a state and holds it `hold` seconds; again only after it
+# was the other way for `rearm` seconds (a bobbing float is one message).
+notices:
+  - { id: fresh-can-full, sensor: FreshH, when: closed, hold: 30, rearm: 1800,
+      text: "The fresh-water container is full: check that the fill valve (Topoff_9_2) turned off" }
+
+# A calcium reactor, for the Reactor page and the "effluent drip slowing?" warning: the CO2 solenoid's output, the
+# effluent pH probe, and the night window of the CO2 program on the Apex's own clock (if it has a separate night band).
+# Leave the whole section out if there is no reactor.
+reactor:
+  co2: Newco21_3_1
+  effluent: pHx5
+  night_apex: ["00:00", "05:00"]

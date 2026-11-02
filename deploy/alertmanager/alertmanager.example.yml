@@ -1,0 +1,56 @@
+# Alertmanager for reef-console (compose profile "alerts"). Copy to alertmanager.yml in this folder (it is in
+# .gitignore: it holds your mail password) and fill in the parts marked CHANGE. Check it with:
+#   docker run --rm -v "$PWD/deploy/alertmanager:/a" --entrypoint amtool prom/alertmanager:v0.34.1 check-config /a/alertmanager.yml
+#
+# Delivery:
+#   critical             -> phone push (ntfy) and mail, within seconds; a further condition in the same alarm group
+#                           follows within a minute, so a leak is never held behind an earlier warning
+#   warning              -> mail, one message per alarm group, a reminder a day while it stays open
+#   alert_kind="event"   -> sent once, without a "resolved" message (a power failure, a notice, the weekly report)
+# One message per alarm group lists every condition of the group that is true (the Apex's own e-mail names only the
+# first).
+
+global:
+  smtp_smarthost: smtp.gmail.com:587 # CHANGE: your mail provider's submission server (STARTTLS)
+  smtp_from: reef@example.com # CHANGE
+  smtp_auth_username: reef@example.com # CHANGE
+  smtp_auth_password: "app-password" # CHANGE (Gmail: an app password); or smtp_auth_password_file
+  smtp_require_tls: true
+
+route:
+  receiver: email
+  group_by: [alertname, alarm]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 24h
+  routes:
+    # one-off events: no "resolved" message (it would read as if a fault were fixed), never repeated
+    - matchers: ['alert_kind="event"']
+      receiver: email-events
+      repeat_interval: 48h
+    - matchers: ['severity="critical"']
+      receiver: ntfy
+      group_wait: 10s
+      group_interval: 1m
+      continue: true
+    - matchers: ['severity="critical"']
+      receiver: email
+      group_wait: 10s
+      group_interval: 1m
+
+receivers:
+  - name: email
+    email_configs:
+      - to: you@example.com # CHANGE
+        send_resolved: true
+  - name: email-events
+    email_configs:
+      - to: you@example.com # CHANGE
+        send_resolved: false
+  # Phone push through ntfy (https://ntfy.sh or your own ntfy server; the app is on Android and iOS). ntfy's
+  # alertmanager template turns the alert into a readable message. Pick a topic name nobody can guess: on the public
+  # server anyone who knows it can read and post to it. To send no pushes, point the critical route at "email" only.
+  - name: ntfy
+    webhook_configs:
+      - url: https://ntfy.sh/CHANGE-to-a-long-random-topic?template=alertmanager
+        send_resolved: true

@@ -1,0 +1,17 @@
+{
+  "name": "Aquarium",
+  "short_name": "Aquarium",
+  "description": "The reef tank and its Neptune Apex: status, alerts, history and water tests.",
+  "id": "/reef/",
+  "start_url": "/reef/",
+  "scope": "/reef/",
+  "display": "standalone",
+  "background_color": "#0e141d",
+  "theme_color": "#0e141d",
+  "icons": [
+    { "src": "/reef/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/reef/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/reef/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/reef/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

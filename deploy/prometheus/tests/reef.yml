@@ -1,0 +1,143 @@
+# Unit tests for ../rules/reef.yml (promtool). From the repository's root:
+#   docker run --rm -v "$PWD/deploy/prometheus:/p" --entrypoint promtool prom/prometheus:v3.15.0 test rules /p/tests/reef.yml
+rule_files:
+  - ../rules/reef.yml
+
+evaluation_interval: 1m
+
+tests:
+  # ---- each active condition is one alert; inactive ones and the scrape's labels do not show
+  - interval: 1m
+    input_series:
+      - series: 'up{job="reef-worker", instance="reef-worker:9106"}'
+        values: '1x20'
+      - series: 'reef_condition_active{alarm="equipment", condition="eb8_9-lost", severity="critical", subject="EB8_9", summary="EB8_9 is not reporting (AquaBus connection or power lost)", instance="reef-worker:9106", job="reef-worker"}'
+        values: '0 0 1x18'
+      - series: 'reef_condition_active{alarm="tank", condition="leak", severity="critical", subject="Leak1B", summary="Leak sensor Leak1B (Leak1B) is CLOSED", instance="reef-worker:9106", job="reef-worker"}'
+        values: '0x20'
+      - series: 'reef_condition_active{alarm="tank", condition="ph-high", severity="warning", subject="pH", summary="pH (pH) above 8.5", instance="reef-worker:9106", job="reef-worker"}'
+        values: '1x20'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: ReefCritical
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: ReefCritical
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              source: reef
+              alarm: equipment
+              condition: eb8_9-lost
+              subject: EB8_9
+              summary: EB8_9 is not reporting (AquaBus connection or power lost)
+            exp_annotations:
+              summary: "Aquarium: EB8_9 is not reporting (AquaBus connection or power lost)"
+      - eval_time: 3m
+        alertname: ReefWarning
+        exp_alerts:
+          - exp_labels: { severity: warning, source: reef, alarm: tank, condition: ph-high, subject: pH, summary: pH (pH) above 8.5 }
+            exp_annotations:
+              summary: "Aquarium: pH (pH) above 8.5"
+
+  # ---- the worker stops: what was firing stays firing (no false all-clear), and ReefWorkerDown says why
+  - interval: 1m
+    input_series:
+      - series: 'up{job="reef-worker", instance="reef-worker:9106"}'
+        values: '1x5 0x30'
+      - series: 'reef_condition_active{alarm="tank", condition="leak", severity="critical", subject="Leak1B", summary="Leak sensor Leak1B (Leak1B) is CLOSED", instance="reef-worker:9106", job="reef-worker"}'
+        values: '1x5 _x30'
+      - series: 'reef_condition_active{alarm="tank", condition="sump-low-float", severity="critical", subject="sumpLo", summary="Float sumpLo (sumpLo) is CLOSED", instance="reef-worker:9106", job="reef-worker"}'
+        values: '0x5 _x30'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: ReefCritical
+        exp_alerts:
+          - exp_labels: { severity: critical, source: reef, alarm: tank, condition: leak, subject: Leak1B, summary: Leak sensor Leak1B (Leak1B) is CLOSED }
+            exp_annotations:
+              summary: "Aquarium: Leak sensor Leak1B (Leak1B) is CLOSED"
+      - eval_time: 20m
+        alertname: ReefWorkerDown
+        exp_alerts:
+          - exp_labels: { severity: warning }
+            exp_annotations:
+              summary: >-
+                The reef console's worker is not answering: the aquarium's alerts are not being judged (Fusion's
+                alarms still work); alerts that were open stay open
+
+  # ---- the worker is back and the condition has ended: the alert ends
+  - interval: 1m
+    input_series:
+      - series: 'up{job="reef-worker", instance="reef-worker:9106"}'
+        values: '1x5 0x5 1x10'
+      - series: 'reef_condition_active{alarm="tank", condition="leak", severity="critical", subject="Leak1B", summary="Leak sensor Leak1B (Leak1B) is CLOSED", instance="reef-worker:9106", job="reef-worker"}'
+        values: '1x5 _x5 0x10'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: ReefCritical
+        exp_alerts:
+          - exp_labels: { severity: critical, source: reef, alarm: tank, condition: leak, subject: Leak1B, summary: Leak sensor Leak1B (Leak1B) is CLOSED }
+            exp_annotations:
+              summary: "Aquarium: Leak sensor Leak1B (Leak1B) is CLOSED"
+      - eval_time: 15m
+        alertname: ReefCritical
+        exp_alerts: []
+
+  # ---- the Apex unreadable; a power failure the Apex reports, once and only for a day
+  - interval: 1m
+    input_series:
+      - series: 'reef_apex_up{instance="reef-worker:9106", job="reef-worker"}'
+        values: '0x20'
+      - series: 'reef_apex_power_restored_timestamp_seconds{instance="reef-worker:9106", job="reef-worker"}'
+        values: '300x1500'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: ReefApexUnreadable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: ReefApexUnreadable
+        exp_alerts:
+          - exp_labels: { severity: warning }
+            exp_annotations:
+              summary: "The reef worker has not been able to read the Apex for 10 minutes: the aquarium's alerts are on hold"
+      - eval_time: 10m
+        alertname: ReefApexPowerFailure
+        exp_alerts:
+          - exp_labels: { severity: warning, alert_kind: event }
+            exp_annotations:
+              summary: "The Apex lost power and came back at 1970-01-01 00:05:00 +0000 UTC"
+      - eval_time: 1446m
+        alertname: ReefApexPowerFailure
+        exp_alerts: []
+
+  # ---- the weekly report: its headline mailed once, for two hours after it is made
+  - interval: 1m
+    input_series:
+      - series: 'reef_report_published_timestamp_seconds{headline="No alerts; test due: calcium", instance="reef-worker:9106", job="reef-worker"}'
+        values: '300x200'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: ReefWeeklyReport
+        exp_alerts:
+          - exp_labels: { severity: warning, alert_kind: event, headline: "No alerts; test due: calcium" }
+            exp_annotations:
+              summary: "Aquarium weekly report: No alerts; test due: calcium (the Reports page has the rest)"
+      - eval_time: 130m
+        alertname: ReefWeeklyReport
+        exp_alerts: []
+
+  # ---- a one-time notice: mailed once, for half an hour after it is sent
+  - interval: 1m
+    input_series:
+      - series: 'reef_notice_timestamp_seconds{notice="fresh-can-full", summary="The fresh-water container is full", instance="reef-worker:9106", job="reef-worker"}'
+        values: '300x100'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: ReefNotice
+        exp_alerts:
+          - exp_labels: { severity: warning, alert_kind: event, notice: fresh-can-full, summary: "The fresh-water container is full" }
+            exp_annotations:
+              summary: "Aquarium: The fresh-water container is full"
+      - eval_time: 40m
+        alertname: ReefNotice
+        exp_alerts: []

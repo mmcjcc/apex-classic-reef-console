@@ -1,0 +1,93 @@
+# reef-console, standalone. Two services from one image:
+#   reef-worker  the only client of the Apex: polls it, keeps the history, judges the alert conditions, publishes
+#                them for Prometheus on port 9106
+#   reef-web     the pages, the API and the MCP endpoint, on http://<this host>:8001/reef/
+# With the profile "alerts" (docker compose --profile alerts up -d), also Prometheus and Alertmanager, which deliver
+# the alerts by mail and phone push. First start: README.md, "Quick start". Settings: .env (from .env.example).
+name: reef
+
+x-reef-env: &reef-env
+  REEF_SITE_FILE: /app/config/site.yaml
+  REEF_DATA_DIR: /data
+  TZ: UTC
+
+services:
+  reef-worker:
+    build: { context: ., target: runtime }
+    image: reef-console:local
+    restart: unless-stopped
+    environment:
+      <<: *reef-env
+      REEF_METRICS_PORT: "9106"
+      # the Apex's own sign-in (its web interface's user), from .env; or mount a CSV file at /run/secrets/apex
+      # ("ip, username, password", then one row) and leave these two out
+      REEF_APEX_USER: ${REEF_APEX_USER:?set REEF_APEX_USER in .env}
+      REEF_APEX_PASSWORD: ${REEF_APEX_PASSWORD:?set REEF_APEX_PASSWORD in .env}
+    volumes:
+      - ./config:/app/config:ro
+      - reef-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9106/metrics', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    mem_limit: 256m
+
+  reef-web:
+    build: { context: ., target: runtime }
+    image: reef-console:local
+    depends_on: [reef-worker]
+    restart: unless-stopped
+    command: ["uvicorn", "reefweb.app:app", "--host", "0.0.0.0", "--port", "8001", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    environment:
+      <<: *reef-env
+      REEF_AUTH: ${REEF_AUTH:-basic} # basic: config/users.txt; none: no sign-in (trusted LAN only); forward: docs
+      REEF_USERS_FILE: /app/config/users.txt
+      REEF_PUBLIC_URL: ${REEF_PUBLIC_URL:-http://localhost:8001/reef} # the address people and MCP clients use
+      REEF_EXTRA_HOSTS: ${REEF_EXTRA_HOSTS:-}
+    ports:
+      - "${REEF_PORT:-8001}:8001"
+    volumes:
+      - ./config:/app/config:ro
+      - reef-data:/data # water tests and the journal are written here
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/reef/healthz', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    mem_limit: 256m
+
+  # ---- alert delivery (profile "alerts") ------------------------------------------------------------------------
+  # Prometheus scrapes the worker and turns its conditions into alerts (deploy/prometheus/rules/reef.yml);
+  # Alertmanager groups them (one message per alarm, listing every true condition) and sends mail and ntfy pushes
+  # (deploy/alertmanager/alertmanager.yml, from alertmanager.example.yml). Neither has a sign-in: their ports are
+  # bound to this host only.
+  prometheus:
+    profiles: [alerts]
+    image: prom/prometheus:v3.15.0
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus",
+              "--storage.tsdb.retention.time=30d", "--web.enable-lifecycle"]
+    volumes:
+      - ./deploy/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    mem_limit: 512m
+
+  alertmanager:
+    profiles: [alerts]
+    image: prom/alertmanager:v0.34.1
+    restart: unless-stopped
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml", "--storage.path=/alertmanager"]
+    volumes:
+      - ./deploy/alertmanager:/etc/alertmanager:ro
+      - alertmanager-data:/alertmanager
+    ports:
+      - "127.0.0.1:9093:9093"
+    mem_limit: 128m
+
+volumes:
+  reef-data:
+  prometheus-data:
+  alertmanager-data:

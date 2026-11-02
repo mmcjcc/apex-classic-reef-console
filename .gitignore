@@ -1,0 +1,32 @@
+# never commit secrets
+.env
+*.env
+secrets/
+*.key
+*.pem
+*.pfx
+*.p12
+id_*
+secs*.txt
+
+# build output
+node_modules/
+dist/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+
+# Claude Code session worktrees
+.claude/
+
+# a standalone install's own files: its site file, users, mail settings and data
+config/site.yaml
+config/users.txt
+deploy/alertmanager/alertmanager.yml
+/data/
+
+# the API answers the backend tests write for the frontend tests
+frontend/src/test/api/

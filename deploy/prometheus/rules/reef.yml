@@ -1,0 +1,85 @@
+# The aquarium's alerts, judged by reef-console's worker. The conditions are in config/site.yaml (the Apex's own alarm
+# lines, the AquaBus modules and the EnergyBars' current); each one the worker reports as active is one alert here,
+# and Alertmanager sends one message per alarm group listing every condition that is true. The worker owns the pending
+# times and clearing bands; these rules only deliver. While the worker is down, the conditions that were active stay
+# firing (no false all-clear) and ReefWorkerDown says why. No rule here carries an instance or host label, so the
+# alerts group by what they are about. Tests: ../tests/reef.yml (promtool test rules).
+groups:
+  - name: reef
+    rules:
+      - alert: ReefCritical
+        expr: |
+          max by (alarm, condition, subject, summary) (reef_condition_active{severity="critical"}) == 1
+            or (
+              max by (alarm, condition, subject, summary) (last_over_time(reef_condition_active{severity="critical"}[1d])) == 1
+                unless on () max(up{job="reef-worker"}) == 1
+            )
+        labels:
+          severity: critical
+          source: reef
+        annotations:
+          summary: "Aquarium: {{ $labels.summary }}"
+
+      - alert: ReefWarning
+        expr: |
+          max by (alarm, condition, subject, summary) (reef_condition_active{severity="warning"}) == 1
+            or (
+              max by (alarm, condition, subject, summary) (last_over_time(reef_condition_active{severity="warning"}[1d])) == 1
+                unless on () max(up{job="reef-worker"}) == 1
+            )
+        labels:
+          severity: warning
+          source: reef
+        annotations:
+          summary: "Aquarium: {{ $labels.summary }}"
+
+      # The Apex's own alarms (Fusion, its e-mail outlet) still work while this is down; nothing else judges the
+      # multi-condition alerts then.
+      - alert: ReefWorkerDown
+        expr: max(up{job="reef-worker"}) == 0 or absent(up{job="reef-worker"})
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            The reef console's worker is not answering: the aquarium's alerts are not being judged (Fusion's alarms
+            still work); alerts that were open stay open
+
+      # The worker answers but cannot read the Apex (off the network, the sign-in refused, the unit busy).
+      - alert: ReefApexUnreadable
+        expr: max(reef_apex_up) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "The reef worker has not been able to read the Apex for 10 minutes: the aquarium's alerts are on hold"
+
+      # The Apex reports when its own power failed and came back (an outage of the house, or of the EnergyBar that
+      # powers the base). Sent once, no "resolved" (alert_kind event).
+      - alert: ReefApexPowerFailure
+        expr: max(reef_apex_power_restored_timestamp_seconds) > time() - 86400
+        labels:
+          severity: warning
+          alert_kind: event
+        annotations:
+          summary: "The Apex lost power and came back at {{ $value | humanizeTimestamp }}"
+
+      # One-time notices (site.yaml notices, e.g. the fresh-water container full; the reactor's "effluent drip
+      # slowing?"): the worker publishes when each was last sent; this mails it once (alert_kind event, no "resolved").
+      - alert: ReefNotice
+        expr: max by (notice, summary) (reef_notice_timestamp_seconds) > time() - 1800
+        labels:
+          severity: warning
+          alert_kind: event
+        annotations:
+          summary: "Aquarium: {{ $labels.summary }}"
+
+      # The weekly report (made on the day and hour of site.yaml's report section, Sunday 09:00 by default) is kept on
+      # the Reports page; this mails its headline once (alert_kind event: no "resolved").
+      - alert: ReefWeeklyReport
+        expr: max by (headline) (reef_report_published_timestamp_seconds) > time() - 7200
+        labels:
+          severity: warning
+          alert_kind: event
+        annotations:
+          summary: "Aquarium weekly report: {{ $labels.headline }} (the Reports page has the rest)"

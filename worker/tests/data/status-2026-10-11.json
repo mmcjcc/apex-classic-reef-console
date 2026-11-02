@@ -1,0 +1,726 @@
+{
+ "istat": {
+  "hostname": "apex",
+  "software": "4.53_4D19",
+  "hardware": "1.0",
+  "serial": "AC4:12345",
+  "extra": {},
+  "timezone": "-3.00",
+  "date": 1791766052,
+  "feed": {
+   "name": 0,
+   "active": 0
+  },
+  "power": {
+   "failed": 1791076600,
+   "restored": 1791076673
+  },
+  "inputs": [
+   {
+    "did": "base_Temp",
+    "type": "Temp",
+    "name": "Tmp",
+    "value": 79.0
+   },
+   {
+    "did": "base_pH",
+    "type": "pH",
+    "name": "pH",
+    "value": 8.41
+   },
+   {
+    "did": "base_ORP",
+    "type": "ORP",
+    "name": "ORP",
+    "value": 356
+   },
+   {
+    "did": "3_0",
+    "type": "Amps",
+    "name": "Amp_3",
+    "value": 2.8
+   },
+   {
+    "did": "4_0",
+    "type": "Amps",
+    "name": "Amp_4",
+    "value": 4.2
+   },
+   {
+    "did": "5_0",
+    "type": "Temp",
+    "name": "Tmpx5",
+    "value": 21.7
+   },
+   {
+    "did": "5_1",
+    "type": "pH",
+    "name": "pHx5",
+    "value": 7.42
+   },
+   {
+    "did": "6_0",
+    "type": "Temp",
+    "name": "Tmpx6",
+    "value": 80.2
+   },
+   {
+    "did": "6_1",
+    "type": "Cond",
+    "name": "Condx6",
+    "value": 35.5
+   },
+   {
+    "did": "9_0",
+    "type": "Amps",
+    "name": "Amp_9",
+    "value": 2.8
+   },
+   {
+    "did": "base_I1",
+    "name": "sumpLo",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "base_I2",
+    "name": "freshL",
+    "type": "digital",
+    "value": 60
+   },
+   {
+    "did": "base_I3",
+    "name": "SumpHi",
+    "type": "digital",
+    "value": 60
+   },
+   {
+    "did": "base_I4",
+    "name": "FreshH",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "base_I5",
+    "name": "Sw5",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "base_I6",
+    "name": "Sw6",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "5_I1",
+    "name": "Swx5_1",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "5_I2",
+    "name": "Swx5_2",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "5_I3",
+    "name": "Swx5_3",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "5_I4",
+    "name": "Swx5_4",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "5_I5",
+    "name": "Swx5_5",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "5_I6",
+    "name": "Swx5_6",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "6_I1",
+    "name": "Swx6_1",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "6_I2",
+    "name": "Swx6_2",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "6_I3",
+    "name": "Swx6_3",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "6_I4",
+    "name": "Swx6_4",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "6_I5",
+    "name": "Swx6_5",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "6_I6",
+    "name": "Swx6_6",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "7_I1",
+    "name": "Leak1B",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "7_I2",
+    "name": "Swx7_2",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "7_I3",
+    "name": "Swx7_3",
+    "type": "digital",
+    "value": 0
+   },
+   {
+    "did": "7_I4",
+    "name": "Swx7_4",
+    "type": "digital",
+    "value": 0
+   }
+  ],
+  "outputs": [
+   {
+    "status": [
+     "medium",
+     "75",
+     "OK",
+     ""
+    ],
+    "intensity": 75,
+    "name": "VarSpd1_I1",
+    "gid": "",
+    "type": "variable",
+    "ID": 0,
+    "did": "base_Var1"
+   },
+   {
+    "status": [
+     "medium",
+     "75",
+     "OK",
+     ""
+    ],
+    "intensity": 75,
+    "name": "VarSpd2_I2",
+    "gid": "",
+    "type": "variable",
+    "ID": 1,
+    "did": "base_Var2"
+   },
+   {
+    "status": [
+     "medium",
+     "75",
+     "OK",
+     ""
+    ],
+    "intensity": 75,
+    "name": "VarSpd3_I3",
+    "gid": "",
+    "type": "variable",
+    "ID": 2,
+    "did": "base_Var3"
+   },
+   {
+    "status": [
+     "medium",
+     "75",
+     "OK",
+     ""
+    ],
+    "intensity": 75,
+    "name": "VarSpd4_I4",
+    "gid": "",
+    "type": "variable",
+    "ID": 3,
+    "did": "base_Var4"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "SndAlm_I6",
+    "gid": "",
+    "type": "alert",
+    "ID": 4,
+    "did": "base_Alarm"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "SndWrn_I7",
+    "gid": "",
+    "type": "alert",
+    "ID": 5,
+    "did": "base_Warn"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "EmailAlm_I5",
+    "gid": "",
+    "type": "alert",
+    "ID": 6,
+    "did": "base_email"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Fuge_9_1",
+    "gid": "",
+    "type": "outlet",
+    "ID": 7,
+    "did": "9_1"
+   },
+   {
+    "status": [
+     "OFF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Topoff_9_2",
+    "gid": "",
+    "type": "outlet",
+    "ID": 8,
+    "did": "9_2"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Fugelight1_9",
+    "gid": "",
+    "type": "outlet",
+    "ID": 9,
+    "did": "9_3"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Fugepump2_9_",
+    "gid": "",
+    "type": "outlet",
+    "ID": 10,
+    "did": "9_4"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "New-ato_9_5",
+    "gid": "",
+    "type": "outlet",
+    "ID": 11,
+    "did": "9_5"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "sumplight9_6",
+    "gid": "",
+    "type": "outlet",
+    "ID": 12,
+    "did": "9_6"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "ozone_9_7",
+    "gid": "",
+    "type": "outlet",
+    "ID": 13,
+    "did": "9_7"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "mainpump_9_8",
+    "gid": "",
+    "type": "outlet",
+    "ID": 14,
+    "did": "9_8"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Newco21_3_1",
+    "gid": "",
+    "type": "outlet",
+    "ID": 15,
+    "did": "3_1"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Skim_3_2",
+    "gid": "",
+    "type": "outlet",
+    "ID": 16,
+    "did": "3_2"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "fugelight",
+    "gid": "",
+    "type": "outlet",
+    "ID": 17,
+    "did": "3_3"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "ATO_3_4",
+    "gid": "",
+    "type": "outlet",
+    "ID": 18,
+    "did": "3_4"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "mainHeaters_",
+    "gid": "",
+    "type": "outlet",
+    "ID": 19,
+    "did": "3_5"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "fan_3_6",
+    "gid": "",
+    "type": "outlet",
+    "ID": 20,
+    "did": "3_6"
+   },
+   {
+    "status": [
+     "ON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "uv_3_7",
+    "gid": "",
+    "type": "outlet",
+    "ID": 21,
+    "did": "3_7"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "calcpump_3_8",
+    "gid": "",
+    "type": "outlet",
+    "ID": 22,
+    "did": "3_8"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "PapioLed_4_1",
+    "gid": "",
+    "type": "outlet",
+    "ID": 23,
+    "did": "4_1"
+   },
+   {
+    "status": [
+     "ON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "whiteLEDR_4_",
+    "gid": "",
+    "type": "outlet",
+    "ID": 24,
+    "did": "4_2"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "blueLEDR_4_3",
+    "gid": "",
+    "type": "outlet",
+    "ID": 25,
+    "did": "4_3"
+   },
+   {
+    "status": [
+     "ON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "opLedR_4_4",
+    "gid": "",
+    "type": "outlet",
+    "ID": 26,
+    "did": "4_4"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "NpL2_4_5",
+    "gid": "",
+    "type": "outlet",
+    "ID": 27,
+    "did": "4_5"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "kessil2_4_6",
+    "gid": "",
+    "type": "outlet",
+    "ID": 28,
+    "did": "4_6"
+   },
+   {
+    "status": [
+     "ON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "ophLeft_4_7",
+    "gid": "",
+    "type": "outlet",
+    "ID": 29,
+    "did": "4_7"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "NpL_4_8",
+    "gid": "",
+    "type": "outlet",
+    "ID": 30,
+    "did": "4_8"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Light1_A1",
+    "gid": "",
+    "type": "virtual",
+    "ID": 31,
+    "did": "Cntl_A1"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Light2_A2",
+    "gid": "",
+    "type": "virtual",
+    "ID": 32,
+    "did": "Cntl_A2"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Pump1_A3",
+    "gid": "",
+    "type": "virtual",
+    "ID": 33,
+    "did": "Cntl_A3"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Pump2_A4",
+    "gid": "",
+    "type": "virtual",
+    "ID": 34,
+    "did": "Cntl_A4"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Heater_A5",
+    "gid": "",
+    "type": "virtual",
+    "ID": 35,
+    "did": "Cntl_A5"
+   },
+   {
+    "status": [
+     "AOF",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Chiller_A6",
+    "gid": "",
+    "type": "virtual",
+    "ID": 36,
+    "did": "Cntl_A6"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "CO2_A7",
+    "gid": "",
+    "type": "virtual",
+    "ID": 37,
+    "did": "Cntl_A7"
+   },
+   {
+    "status": [
+     "AON",
+     "",
+     "OK",
+     ""
+    ],
+    "name": "Ozone_A8",
+    "gid": "",
+    "type": "virtual",
+    "ID": 38,
+    "did": "Cntl_A8"
+   }
+  ]
+ }
+}

@@ -1,0 +1,18 @@
+# Prometheus for reef-console (compose profile "alerts"): scrapes the worker and evaluates the reef rules. The worker
+# judges every condition itself (pending times, clearing bands); these rules only turn its judgement into alerts.
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: [alertmanager:9093]
+
+rule_files:
+  - rules/*.yml
+
+scrape_configs:
+  - job_name: reef-worker
+    static_configs:
+      - targets: [reef-worker:9106]
